@@ -60,6 +60,9 @@ jobs:
           FV="${{ github.event.inputs.flutter_version }}"
           if [ -n "$FV" ]; then
             echo "flutter=$FV" >> "$GITHUB_OUTPUT"
+          elif grep -qE 'app_links:[[:space:]]*"?(\^7\.|>=7)' pubspec.yaml; then
+            echo "::warning::app_links >=7 butuh Flutter >=3.47.0; memakai Flutter 3.47.0."
+            echo "flutter=3.47.0" >> "$GITHUB_OUTPUT"
           elif grep -qE 'font_awesome_flutter:[[:space:]]*"?(\^10\.|10\.|>=10[^0-9])' pubspec.yaml; then
             echo "::warning::font_awesome_flutter <11 butuh Flutter <3.44; memakai Flutter 3.35.3."
             echo "flutter=3.35.3" >> "$GITHUB_OUTPUT"

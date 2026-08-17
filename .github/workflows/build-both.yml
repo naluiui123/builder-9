@@ -103,6 +103,9 @@ jobs:
           FV="${{ github.event.inputs.flutter_version }}"
           if [ -n "$FV" ]; then
             echo "flutter=$FV" >> "$GITHUB_OUTPUT"
+          elif grep -qE 'app_links:[[:space:]]*"?(\^7\.|>=7)' pubspec.yaml; then
+            echo "::warning::app_links >=7 butuh Flutter >=3.47.0; memakai Flutter 3.47.0."
+            echo "flutter=3.47.0" >> "$GITHUB_OUTPUT"
           elif grep -qE 'font_awesome_flutter:[[:space:]]*"?(\^10\.|10\.|>=10[^0-9])' pubspec.yaml; then
             echo "::warning::font_awesome_flutter <11 butuh Flutter <3.44; memakai Flutter 3.35.3."
             echo "flutter=3.35.3" >> "$GITHUB_OUTPUT"
@@ -187,6 +190,16 @@ jobs:
             sed -i -E 's/compileSdkVersion[[:space:]]+[0-9]+/compileSdkVersion 36/g; s/compileSdk[[:space:]]*=*[[:space:]]*[0-9]+/compileSdk = 36/g' "$f"
             grep -E 'compileSdk' "$f" || true
           done
+
+      - name: Generate app icons (if configured)
+        working-directory: ${{ steps.root.outputs.dir }}
+        run: |
+          if grep -q 'flutter_launcher_icons' pubspec.yaml; then
+            echo "flutter_launcher_icons ditemukan → generate icons..."
+            dart run flutter_launcher_icons || echo "::warning::Gagal generate icons, lanjut build."
+          else
+            echo "flutter_launcher_icons tidak ada → skip."
+          fi
 
       - name: Build APK
         working-directory: ${{ steps.root.outputs.dir }}
